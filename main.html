@@ -1,0 +1,153 @@
+<!-- main.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .dashboard-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 40px auto 20px auto;
+      padding: 20px;
+    }
+    .action-buttons .btn {
+      width: 180px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container text-center">
+    <h2 class="mb-4">Sistema de Lançamentos</h2>
+    <div class="action-buttons d-flex flex-wrap justify-content-center mb-5">
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCliente">Novo Cliente</button>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalVenda">Nova Venda</button>
+      <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalPagamento">Novo Pagamento</button>
+      <a href="https://docs.google.com/spreadsheets/d/1onDc86QfihsuPTP8ey8TDopjeotCN2Fgi1o46y1DMYI/edit?usp=sharing"
+         target="_blank"
+         class="btn btn-info">Relatórios</a>
+    </div>
+
+    <!-- Modal Cliente -->
+    <div class="modal fade" id="modalCliente" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Cadastrar Cliente</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formCliente" class="text-start">
+              <div class="mb-3">
+                <label class="form-label">Nome</label>
+                <input type="text" name="nome" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Telefone</label>
+                <input type="text" name="telefone" class="form-control" required>
+              </div>
+              <button class="btn btn-success w-100">Salvar Cliente</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Venda -->
+    <div class="modal fade" id="modalVenda" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Registrar Venda</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formVenda" class="text-start">
+              <div class="mb-3">
+                <label class="form-label">Cliente</label>
+                <select id="vCliente" name="cliente" class="form-select" required></select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Peso (Kg)</label>
+                <input type="number" step="0.01" name="peso" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Valor</label>
+                <input type="number" step="0.01" name="valor" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Tipo de Pagamento</label>
+                <select name="tipoPagamento" class="form-select">
+                  <option value="À vista">À vista</option>
+                  <option value="Fiado">Fiado</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Observação</label>
+                <textarea name="observacao" class="form-control"></textarea>
+              </div>
+              <button class="btn btn-primary w-100">Salvar Venda</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Pagamento -->
+    <div class="modal fade" id="modalPagamento" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Registrar Pagamento</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="formPagamento" class="text-start">
+              <div class="mb-3">
+                <label class="form-label">Cliente</label>
+                <select id="pCliente" name="cliente" class="form-select" required></select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Valor</label>
+                <input type="number" step="0.01" name="valor" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Observação</label>
+                <textarea name="observacao" class="form-control"></textarea>
+              </div>
+              <button class="btn btn-warning w-100">Salvar Pagamento</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxlxeukLdA9WQFjPZGMb1YfMTmIu0KzLQGtuOgzlthju5uf5K4p6wpIPGYV7o-yHXJxFw/exec';
+      window.addEventListener('DOMContentLoaded', async () => {
+        const { clientes } = await fetch(`${SCRIPT_URL}?action=listClientes`).then(r => r.json());
+        ['vCliente','pCliente'].forEach(id => {
+          const sel = document.getElementById(id);
+          clientes.forEach(c => sel.add(new Option(c, c)));
+        });
+      });
+      document.getElementById('formCliente').addEventListener('submit', async e => {
+        e.preventDefault(); const f=new FormData(e.target);
+        const res=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'addCliente',nome:f.get('nome'),telefone:f.get('telefone')})}).then(r=>r.json());
+        if(res.ok){alert('Cliente cadastrado');location.reload();}
+      });
+      document.getElementById('formVenda').addEventListener('submit', async e => {
+        e.preventDefault(); const f=new FormData(e.target);
+        const res=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'addVenda',cliente:f.get('cliente'),peso:f.get('peso'),valor:f.get('valor'),tipoPagamento:f.get('tipoPagamento'),observacao:f.get('observacao')})}).then(r=>r.json());
+        if(res.ok){alert('Venda registrada');location.reload();}
+      });
+      document.getElementById('formPagamento').addEventListener('submit', async e => {
+        e.preventDefault(); const f=new FormData(e.target);
+        const res=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action:'addPagamento',cliente:f.get('cliente'),valor:f.get('valor'),observacao:f.get('observacao')})}).then(r=>r.json());
+        if(res.ok){alert('Pagamento registrado');location.reload();}
+      });
+    </script>
